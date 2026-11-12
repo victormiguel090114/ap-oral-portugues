@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O Sal e a Água | Apresentação Oral de Português</title>
+    <style>
+        :root {
+            --bg-dark: #050811;
+            --card-bg: rgba(15, 23, 42, 0.72);
+            --card-border: rgba(255, 255, 255, 0.14);
+            --gold: #fbbf24;
+            --cyan: #38bdf8;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; cursor: none; }
+        body {
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at 15% 20%, rgba(56, 189, 248, 0.1) 0%, transparent 45%),
+                              radial-gradient(circle at 85% 80%, rgba(251, 191, 36, 0.1) 0%, transparent 45%);
+            color: var(--text-main); height: 100vh; overflow: hidden;
+            display: flex; flex-direction: column; justify-content: space-between; perspective: 1400px;
+        }
+        #cursor-dot, #cursor-ring { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; border-radius: 50%; transform: translate(-50%, -50%); }
+        #cursor-dot { width: 8px; height: 8px; background: var(--gold); box-shadow: 0 0 12px var(--gold); }
+        #cursor-ring { width: 38px; height: 38px; border: 1.5px solid rgba(56, 189, 248, 0.7); transition: width 0.2s, height 0.2s, border-color 0.2s; }
+        body.hovering #cursor-ring { width: 56px; height: 56px; border-color: var(--gold); background: rgba(251, 191, 36, 0.1); }
+        #bg-canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
+        .progress-container { position: fixed; top: 0; left: 0; width: 100%; height: 4px; background: rgba(255,255,255,0.06); z-index: 100; }
+        .progress-bar { height: 100%; width: 14.28%; background: linear-gradient(90deg, var(--cyan), var(--gold)); box-shadow: 0 0 12px var(--gold); transition: width 0.5s ease; }
+        header, footer { position: relative; z-index: 20; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; background: rgba(5, 8, 17, 0.65); backdrop-filter: blur(12px); border-color: var(--card-border); transition: opacity 0.4s; }
+        header { border-bottom: 1px solid var(--card-border); }
+        footer { border-top: 1px solid var(--card-border); font-size: 0.85rem; color: var(--text-muted); }
+        body.focus-mode header, body.focus-mode footer { opacity: 0; pointer-events: none; }
+        .brand { display: flex; align-items: center; gap: 0.6rem; font-weight: 700; }
+        .brand-badge { background: linear-gradient(135deg, var(--gold), #d97706); color: #050811; padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 800; }
+        nav { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+        .nav-btn, .btn-action { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: var(--text-muted); padding: 0.45rem 0.85rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; transition: all 0.25s; }
+        .btn-action { color: var(--text-main); }
+        .nav-btn:hover, .btn-action:hover { color: #050811; background: var(--gold); border-color: var(--gold); transform: translateY(-2px); }
+        .nav-btn.active { background: rgba(251, 191, 36, 0.18); border-color: var(--gold); color: var(--gold); }
+        main { position: relative; z-index: 10; flex: 1; display: flex; align-items: center; justify-content: center; padding: 1.5rem 2rem; }
+        .stage-card { width: 100%; max-width: 1050px; min-height: 490px; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 28px; padding: 2.8rem 3.2rem; backdrop-filter: blur(20px); box-shadow: 0 30px 60px -15px rgba(0,0,0,0.85); transform-style: preserve-3d; transition: transform 0.1s ease-out; position: relative; display: flex; flex-direction: column; justify-content: center; }
+        .glare { position: absolute; inset: 0; border-radius: 28px; pointer-events: none; opacity: 0; transition: opacity 0.3s; }
+        .stage-card:hover .glare { opacity: 1; }
+        .slide { display: none; transform: translateZ(45px); }
+        .slide.active { display: block; animation: slideEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes slideEnter { from { opacity: 0; transform: translateZ(10px) translateY(20px); } to { opacity: 1; transform: translateZ(45px) translateY(0); } }
+        .kicker { display: inline-block; padding: 0.3rem 0.9rem; border-radius: 999px; background: rgba(56,189,248,0.14); border: 1px solid rgba(56,189,248,0.35); color: var(--cyan); font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; }
+        h1 { font-size: 3.2rem; font-weight: 800; margin-bottom: 0.8rem; background: linear-gradient(135deg, #fff 30%, var(--cyan) 70%, var(--gold) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        h2 { font-size: 2.1rem; margin-bottom: 0.8rem; }
+        h2 span { color: var(--gold); }
+        .lead { font-size: 1.15rem; line-height: 1.6; color: #cbd5e1; margin-bottom: 1.5rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.4rem; }
+        .mini-card { background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.09); border-radius: 16px; padding: 1.4rem; transition: 0.3s; transform: translateZ(20px); }
+        .mini-card:hover { transform: translateZ(35px) translateY(-5px); border-color: rgba(251,191,36,0.5); background: rgba(30,41,59,0.9); }
+        .mini-card h3 { color: var(--gold); font-size: 1.1rem; margin-bottom: 0.5rem; }
+        .mini-card p { font-size: 0.96rem; line-height: 1.5; color: #cbd5e1; }
+        .timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+        .step { background: rgba(15,23,42,0.75); border-top: 3px solid var(--cyan); border-radius: 14px; padding: 1.2rem; transition: 0.3s; }
+        .step:nth-child(even) { border-top-color: var(--gold); }
+        .step:hover { transform: translateY(-6px); }
+        .step-num { font-size: 0.78rem; font-weight: 800; color: var(--cyan); display: block; margin-bottom: 0.3rem; }
+        .step:nth-child(even) .step-num { color: var(--gold); }
+        .step h4 { font-size: 1rem; margin-bottom: 0.4rem; color: #fff; }
+        .step p { font-size: 0.88rem; line-height: 1.45; color: var(--text-muted); }
+        .quote-box { background: linear-gradient(90deg, rgba(251,191,36,0.14), rgba(56,189,248,0.05)); border-left: 4px solid var(--gold); padding: 1.2rem 1.6rem; border-radius: 0 14px 14px 0; margin: 1.2rem 0; font-size: 1.2rem; font-style: italic; }
+        .timer-box, .controls { display: flex; align-items: center; gap: 0.7rem; }
+        .timer-display { font-family: monospace; font-size: 1rem; color: var(--cyan); font-weight: 700; }
+        @media (max-width: 900px) { .grid-3, .grid-2, .timeline { grid-template-columns: 1fr; } * { cursor: auto; } #cursor-dot, #cursor-ring { display: none; } }
+    </style>
+</head>
+<body>
+    <div id="cursor-dot"></div><div id="cursor-ring"></div>
+    <div class="progress-container"><div class="progress-bar" id="progress-bar"></div></div>
+    <header>
+        <div class="brand"><span class="brand-badge">Português</span><span>Apresentação Oral</span></div>
+        <nav>
+            <button class="nav-btn active" data-slide="0">1. Capa</button>
+            <button class="nav-btn" data-slide="1">2. Autor & Obra</button>
+            <button class="nav-btn" data-slide="2">3. Personagens</button>
+            <button class="nav-btn" data-slide="3">4. Enredo</button>
+            <button class="nav-btn" data-slide="4">5. Simbolismo</button>
+            <button class="nav-btn" data-slide="5">6. Curiosidades</button>
+            <button class="nav-btn" data-slide="6">7. Conclusão</button>
+        </nav>
+    </header>
+    <main>
+        <div class="stage-card" id="tilt-card">
+            <div class="glare" id="glare"></div>
+            <section class="slide active">
+                <div class="kicker">✦ Contos Tradicionais do Povo Português</div>
+                <h1>O Sal e a Água</h1>
+                <p class="lead">Uma análise à literatura oral portuguesa recolhida por <strong>Teófilo Braga</strong>, onde a simplicidade do essencial vence a vaidade das riquezas.</p>
+                <div class="grid-3">
+                    <div class="mini-card"><h3>📖 A Obra</h3><p>Publicado em 1883, preserva a memória, o imaginário e a sabedoria popular de Portugal.</p></div>
+                    <div class="mini-card"><h3>💧 O Tema</h3><p>O contraste entre o amor verdadeiro, discreto e indispensável, e a lisonja superficial.</p></div>
+                    <div class="mini-card"><h3>🎯 Objetivo</h3><p>Explorar as personagens, a estrutura narrativa e a mensagem intemporal do conto.</p></div>
+                </div>
+            </section>
+            <section class="slide">
+                <div class="kicker">✦ Contextualização Literária</div>
+                <h2>Teófilo Braga e a <span>Tradição Oral</span></h2>
+                <p class="lead">Estes contos eram transmitidos oralmente nos serões familiares, moldando a identidade cultural do povo português.</p>
+                <div class="grid-2">
+                    <div class="mini-card"><h3>👤 Quem foi Teófilo Braga?</h3><p>Escritor, etnógrafo, historiador da literatura e Presidente da República Portuguesa (1843–1924), dedicou a vida a registar o folclore nacional.</p></div>
+            <section class="slide">
+                <div class="kicker">✦ Galeria de Figuras</div>
+                <h2>As <span>Personagens</span> do Conto</h2>
+                <p class="lead">As personagens representam arquétipos humanos claros e contrastantes, típicos da narrativa tradicional.</p>
+                <div class="grid-3">
+                    <div class="mini-card"><h3>👑 O Rei (O Pai)</h3><p>Representa a autoridade cega pela vaidade. Deixa-se enganar por palavras bonitas e age por impulso ao expulsar a filha mais nova.</p></div>
+                    <div class="mini-card"><h3>💎 As Irmãs Mais Velhas</h3><p>Simbolizam a hipocrisia e o interesse material, usando comparações exageradas (ouro, joias) apenas para agradar ao pai.</p></div>
+                    <div class="mini-card"><h3>🧂 A Filha Mais Nova</h3><p>Encarna a sinceridade, a humildade e a sabedoria, expressando um afeto vital, profundo e verdadeiro.</p></div>
+                </div>
+            </section>
+            <section class="slide">
+                <div class="kicker">✦ Estrutura Narrativa</div>
+                <h2>Os 4 Momentos da <span>História</span></h2>
+                <p class="lead">A narrativa segue uma progressão clássica: provação, injustiça, aprendizagem e reconciliação.</p>
+                <div class="timeline">
+                    <div class="step"><span class="step-num">01. O Desafio</span><h4>A Pergunta do Rei</h4><p>O rei pergunta às três filhas o quanto gostam dele para decidir como repartir o reino.</p></div>
+                    <div class="step"><span class="step-num">02. A Resposta</span><h4>O Sal e a Água</h4><p>Enquanto as mais velhas falam em ouro, a mais nova diz querer ao pai <em>«como a comida quer o sal»</em>.</p></div>
+                    <div class="step"><span class="step-num">03. O Castigo</span><h4>A Expulsão</h4><p>Ofendido pela comparação humilde, o rei expulsa a filha mais nova do palácio.</p></div>
+                    <div class="step"><span class="step-num">04. A Revelação</span><h4>O Banquete sem Sal</h4><p>Ao provar comida sem sal, o rei percebe que nada tem sabor sem o essencial e pede perdão à filha.</p></div>
+                </div>
+            </section>
+            <section class="slide">
+                <div class="kicker">✦ Interpretação Profunda</div>
+                <h2>O Simbolismo do <span>Sal</span> e da <span>Água</span></h2>
+                <div class="quote-box">«Quero-vos tanto como a comida quer o sal, e como a terra quer a água.»</div>
+                <div class="grid-2">
+                    <div class="mini-card"><h3>🌊 O Essencial vs. O Supérfluo</h3><p>Ninguém sobrevive de ouro ou joias. O <strong>sal</strong> (que dá sabor e conserva) e a <strong>água</strong> (fonte de vida) são indispensáveis à existência humana.</p></div>
+                    <div class="mini-card"><h3>⚖️ Aparência vs. Verdade</h3><p>O conto ensina a desconfiar dos elogios fáceis. O afeto verdadeiro manifesta-se na presença silenciosa e constante do dia a dia.</p></div>
+                </div>
+            </section>
+            <section class="slide">
+                <div class="kicker">✦ Conexões Literárias</div>
+                <h2>Sabias que...? <span>Ecos Universais</span></h2>
+                <p class="lead">Este conto português partilha raízes com grandes obras da literatura mundial.</p>
+                <div class="grid-2">
+                    <div class="mini-card"><h3>🎭 Ligação a Shakespeare</h3><p>O enredo assemelha-se à célebre tragédia <strong><em>Rei Lear</em></strong>, de William Shakespeare, onde a filha mais nova (Cordélia) também é deserdada por recusar elogios falsos.</p></div>
+                    <div class="mini-card"><h3>🌍 Tradição Indo-Europeia</h3><p>Na classificação internacional de contos populares, esta história corresponde ao tipo <strong>ATU 923 ("Amor como o Sal")</strong>, presente em várias culturas europeias.</p></div>
+                </div>
+            </section>
+            <section class="slide">
+                <div class="kicker">✦ Síntese Final</div>
+                <h2>Conclusão</h2>
+                <p class="lead"><strong><em>O Sal e a Água</em></strong> transmite uma lição intemporal sobre o verdadeiro valor das coisas simples.</p>
+                <div class="grid-2">
+                    <div class="mini-card"><h3>✨ Mensagem Principal</h3><p>Não devemos julgar os sentimentos pelas aparências. O que é essencial na vida é, muitas vezes, o mais discreto.</p></div>
+                    <div class="mini-card"><h3>🇵🇹 Legado Cultural</h3><p>Graças a Teófilo Braga, este conto continua a enriquecer a língua portuguesa e a formar novas gerações.</p></div>
+                </div>
+                <p style="margin-top: 1.5rem; color: var(--gold); font-weight: 700;">Muito obrigado pela vossa atenção! Estou disponível para questões.</p>
+            </section>
+        </div>
+    </main>
+    <footer>
+        <div class="timer-box"><span>⏱️</span><span class="timer-display" id="timer">00:00</span><button class="btn-action" id="timer-toggle">Iniciar</button><button class="btn-action" id="timer-reset">Repor</button></div>
+        <div>Usa as setas <strong>← →</strong>, a roda do rato ou prime <strong>F</strong> para Modo Foco</div>
+        <div class="controls"><button class="btn-action" id="focus-btn">👁️ Foco</button><button class="btn-action" id="prev-btn">←</button><span id="slide-counter">1 / 7</span><button class="btn-action" id="next-btn">→</button></div>
+    </footer>
+    <canvas id="bg-canvas"></canvas>
+    <script>
+        const cursorDot = document.getElementById('cursor-dot'), cursorRing = document.getElementById('cursor-ring');
+        let mouseX = innerWidth / 2, mouseY = innerHeight / 2, ringX = mouseX, ringY = mouseY;
+        document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; cursorDot.style.left = mouseX + 'px'; cursorDot.style.top = mouseY + 'px'; });
+        (function animCursor() { ringX += (mouseX - ringX) * 0.2; ringY += (mouseY - ringY) * 0.2; cursorRing.style.left = ringX + 'px'; cursorRing.style.top = ringY + 'px'; requestAnimationFrame(animCursor); })();
+        document.querySelectorAll('button, .mini-card, .step').forEach(el => { el.addEventListener('mouseenter', () => document.body.classList.add('hovering')); el.addEventListener('mouseleave', () => document.body.classList.remove('hovering')); });
+
+        const slides = document.querySelectorAll('.slide'), navBtns = document.querySelectorAll('.nav-btn'), progressBar = document.getElementById('progress-bar'), slideCounter = document.getElementById('slide-counter');
+        let currentSlide = 0, isScrolling = false;
+        function goToSlide(idx) {
+            currentSlide = (idx + slides.length) % slides.length;
+            slides.forEach(s => s.classList.remove('active')); navBtns.forEach(b => b.classList.remove('active'));
+            slides[currentSlide].classList.add('active'); navBtns[currentSlide].classList.add('active');
+            progressBar.style.width = ((currentSlide + 1) / slides.length * 100) + '%';
+            slideCounter.textContent = `${currentSlide + 1} / ${slides.length}`;
+        }
+        navBtns.forEach((b, i) => b.addEventListener('click', () => goToSlide(i)));
+        document.getElementById('prev-btn').addEventListener('click', () => goToSlide(currentSlide - 1));
+        document.getElementById('next-btn').addEventListener('click', () => goToSlide(currentSlide + 1));
+        document.addEventListener('keydown', e => { if (e.key === 'ArrowRight' || e.key === ' ') goToSlide(currentSlide + 1); if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1); if (e.key.toLowerCase() === 'f') document.body.classList.toggle('focus-mode'); });
+        window.addEventListener('wheel', e => { if (isScrolling) return; isScrolling = true; goToSlide(currentSlide + (e.deltaY > 0 ? 1 : -1)); setTimeout(() => isScrolling = false, 600); });
+        document.getElementById('focus-btn').addEventListener('click', () => document.body.classList.toggle('focus-mode'));
+
+        const card = document.getElementById('tilt-card'), glare = document.getElementById('glare');
+        document.addEventListener('mousemove', e => {
+            const r = card.getBoundingClientRect();
+            const rotY = ((e.clientX - (r.left + r.width / 2)) / (innerWidth / 2)) * 8;
+            const rotX = -((e.clientY - (r.top + r.height / 2)) / (innerHeight / 2)) * 8;
+            card.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+            glare.style.background = `radial-gradient(circle at ${((e.clientX - r.left) / r.width) * 100}% ${((e.clientY - r.top) / r.height) * 100}%, rgba(255,255,255,0.14), transparent 65%)`;
+        });
+
+        let sec = 0, tInt = null;
+        const tDisp = document.getElementById('timer'), tTog = document.getElementById('timer-toggle');
+        tTog.addEventListener('click', () => {
+            if (tInt) { clearInterval(tInt); tInt = null; tTog.textContent = 'Continuar'; }
+            else { tInt = setInterval(() => { sec++; tDisp.textContent = `${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`; }, 1000); tTog.textContent = 'Pausar'; }
+        });
+        document.getElementById('timer-reset').addEventListener('click', () => { clearInterval(tInt); tInt = null; sec = 0; tDisp.textContent = '00:00'; tTog.textContent = 'Iniciar'; });
+
+        const canvas = document.getElementById('bg-canvas'), ctx = canvas.getContext('2d');
+        let pts = [];
+        function res() { canvas.width = innerWidth; canvas.height = innerHeight; }
+        window.addEventListener('resize', res); res();
+        class Pt {
+            constructor(x, y, vx, vy) { this.x = x ?? Math.random() * canvas.width; this.y = y ?? Math.random() * canvas.height; this.vx = vx ?? (Math.random() - 0.5); this.vy = vy ?? (Math.random() - 0.5); this.c = Math.random() > 0.5 ? '#fbbf24' : '#38bdf8'; }
